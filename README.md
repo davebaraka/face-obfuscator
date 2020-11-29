@@ -11,3 +11,7 @@
 4. Click the LOAD UNPACKED button and select the extension directory.
 
 **Note:** The extension is slow on iniital navigation to website.
+
+## Contribute
+
+The extension was developed as an academic project and we intend for this project to be more as an educational resource, learn by open sourcing. We are open for feedback and contribution.
