@@ -1,5 +1,6 @@
 {
-  "name": "face obfuscator",
+  "name": "Face Obfuscator",
+  "description" : "Uses face detection and recognition algorithms to block trained faces from images loaded in chrome.",
   "version": "1.0",
   "permissions": ["webRequest", "<all_urls>", "webRequestBlocking"],
   "content_scripts": [
