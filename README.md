@@ -18,7 +18,7 @@ Face Obfuscator is a chrome browser extension that uses face detection and recog
 
 Face descriptors were generated from images under `labeled_images` and saved in a `model.json` file. These descriptors are loaded on every site navigation. Improvements to this injection to speed the dynamic manipualtion should be explored. There are also some errors on continually applying the face detection and recoginiton algorithims on dynamically loaded images. This continual application is driven by the javascript mutation observer.
 
-We also use modify the 'access-control-allow-origin' header from requested images in order to bypass CORS protocol. This allows us to read and modify images downloaded from other origins in the HTML5 canvas.
+We also use modify the 'access-control-allow-origin' header from requested images in order to bypass CORS protocol in `background.js`. This allows us to read and modify images downloaded from other origins in the HTML5 canvas.
 
 ## Contribute
 
