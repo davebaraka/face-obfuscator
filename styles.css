@@ -1,0 +1,6 @@
+/*
+Initially blur all images
+*/
+img {
+    filter: blur(25px);
+}

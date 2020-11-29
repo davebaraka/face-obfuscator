@@ -1,0 +1,20 @@
+{
+  "name": "face obfuscator",
+  "version": "1.0",
+  "permissions": ["webRequest", "<all_urls>", "webRequestBlocking"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["styles.css"],
+      "js": [ "face-api.min.js", "content.js"],
+      "run_at": "document_start",
+      "al_frames": true
+    }
+  ],
+  "web_accessible_resources": ["models/*", "labeled_images/*"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "manifest_version": 2
+}
