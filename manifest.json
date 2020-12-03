@@ -12,7 +12,7 @@
       "al_frames": true
     }
   ],
-  "web_accessible_resources": ["models/*", "labeled_images/*"],
+  "web_accessible_resources": ["models/*", "labeled_images/*",  "descriptors.json"],
   "background": {
     "scripts": ["background.js"],
     "persistent": true

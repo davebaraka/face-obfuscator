@@ -2,17 +2,25 @@
 Get image, detect and recognize faces, then update src image
 */
 function processImage(node) {
-  img = new Image();
-  img.crossOrigin = "anonymous";
-  img.data = node;
-  img.onload = async function () {
-    const detections = await detectFaces(this);
-    const recognitions = recognizeFaces(detections);
-    const dataURL = draw(this, detections, recognitions);
-    if (dataURL != null) this.data.src = dataURL;
-    this.data.style.setProperty("filter", "blur(0px)");
-  };
-  img.src = node.src;
+  node.crossOrigin = "anonymous";
+  if (node.complete) {
+     f = async () => {
+      const detections = await detectFaces(node);
+      const recognitions = recognizeFaces(detections);
+      const dataURL = draw(node, detections, recognitions);
+      if (dataURL != null) node.src = dataURL;
+      node.style.setProperty("filter", "blur(0px)");
+    }
+    f();
+  } else {
+    node.onload = async function () {
+      const detections = await detectFaces(this);
+      const recognitions = recognizeFaces(detections);
+      const dataURL = draw(this, detections, recognitions);
+      if (dataURL != null) this.src = dataURL;
+      this.style.setProperty("filter", "blur(0px)");
+    };
+  }
 }
 
 /*
@@ -20,7 +28,7 @@ Detect faces from image
 */
 async function detectFaces(img) {
   faceapi.matchDimensions(img, { width: img.width, height: img.height });
-  const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
+  const detections = await faceapi.detectAllFaces(img, faceDetector).withFaceLandmarks().withFaceDescriptors();
   return faceapi.resizeResults(detections, { width: img.width, height: img.height });
 }
 
@@ -59,7 +67,8 @@ Load pre-trained models
 */
 async function loadModels() {
   const MODEL_URL = chrome.extension.getURL("models");
-  await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // Face detection algorithim
+  await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL); // Face detection algorithim - faster, but less accurate
+  //await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // Face detection algorithim
   await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL); // Face recognition algorithim
   await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL); // Face landmarks algorithim
 }
@@ -72,12 +81,16 @@ function loadLabeledImages() {
   return Promise.all(
     labels.map(async (label) => {
       const descriptions = [];
-      for (let i = 1; i <= 8; i++) {
-        const img = await faceapi.fetchImage(chrome.extension.getURL(`labeled_images/${label}/${i}.png`));
-        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-        descriptions.push(detections.descriptor);
+      for (let i = 1; i <= 500; i++) {
+        try {
+          const img = await faceapi.fetchImage(chrome.extension.getURL(`labeled_images/${label}/${i}.jpg`));
+          const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+          if (detections != null) descriptions.push(detections.descriptor);
+        } catch (error) {
+        }
+        console.log(i);
       }
-      //encode(descriptions)
+      encode(descriptions);
       return new faceapi.LabeledFaceDescriptors(label, descriptions);
     })
   );
@@ -106,19 +119,19 @@ function observeMutations() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+// Compute face descriptors from labeled images
 async function trainFaces() {
   const labeledFaceDescriptors = await loadLabeledImages();
   faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
-  encode(faceMatcher)
 }
 
+// Load pre computed face descriptors
 async function loadFaces() {
-  const URL = chrome.extension.getURL("labeled_images/Donald Trump/model.json");
+  const URL = chrome.extension.getURL("descriptors.json");
   const response = await fetch(URL);
   const json = await response.json();
-  const labeledFaceDescriptors = new faceapi.LabeledFaceDescriptors('Donald Trump', decode(json));
+  const labeledFaceDescriptors = new faceapi.LabeledFaceDescriptors("Donald Trump", decode(json));
   faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
-
 }
 
 /*
@@ -154,7 +167,7 @@ Decode descriptors from file
 */
 function decode(obj) {
   const context = typeof window === "undefined" ? global : window;
-  const json = JSON.stringify(obj)
+  const json = JSON.stringify(obj);
   const decodedJSON = JSON.parse(json, function (key, value) {
     // the reviver function looks for the typed array flag
     try {
@@ -189,3 +202,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 Matches faces
 */
 var faceMatcher;
+
+/*
+Detects faces
+*/
+var faceDetector = new faceapi.TinyFaceDetectorOptions() //new faceapi.SsdMobilenetv1Options()
