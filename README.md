@@ -1,5 +1,7 @@
 # face-obfuscator
 
+<img src="bin/image1.png" width="45%" alt="Logo"> <img src="bin/image2.png" width="45%" alt="Logo">
+
 Face Obfuscator is a chrome browser extension that uses face detection and recognition algorithms to dynamically and locally block pre-trained faces from images loaded in chrome. The extension is powered by the [face-api](https://github.com/justadudewhohacks/face-api.js) javascript library. Images are initially loaded with a gaussian blur, then obfuscated by dynamically adding a red rectanglur box over the recognized faces.
 
 ## Getting Started
